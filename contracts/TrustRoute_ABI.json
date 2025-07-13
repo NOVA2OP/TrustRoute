@@ -1,0 +1,49 @@
+[
+  {
+    "inputs": [
+      { "internalType": "string", "name": "batchId", "type": "string" },
+      { "internalType": "string", "name": "role", "type": "string" },
+      { "internalType": "string", "name": "data", "type": "string" }
+    ],
+    "name": "addLog",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "string", "name": "", "type": "string" },
+      { "internalType": "uint256", "name": "", "type": "uint256" }
+    ],
+    "name": "batchLogs",
+    "outputs": [
+      { "internalType": "string", "name": "role", "type": "string" },
+      { "internalType": "string", "name": "data", "type": "string" },
+      { "internalType": "uint256", "name": "timestamp", "type": "uint256" },
+      { "internalType": "address", "name": "addedBy", "type": "address" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "string", "name": "batchId", "type": "string" }
+    ],
+    "name": "getLogs",
+    "outputs": [
+      {
+        "components": [
+          { "internalType": "string", "name": "role", "type": "string" },
+          { "internalType": "string", "name": "data", "type": "string" },
+          { "internalType": "uint256", "name": "timestamp", "type": "uint256" },
+          { "internalType": "address", "name": "addedBy", "type": "address" }
+        ],
+        "internalType": "struct TrustRoute.Log[]",
+        "name": "",
+        "type": "tuple[]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]
