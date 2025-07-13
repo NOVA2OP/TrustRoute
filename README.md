@@ -1,9 +1,9 @@
 # TrustRoute
 
-**TrustRoute** is a blockchain + cybersecurity solution built for Walmart Hackathon 2025 to build customer trust through:
+**TrustRoute** is a blockchain + cybersecurity solution built for the Walmart Hackathon 2025 to build customer trust through:
 - Blockchain-based product authenticity tracking
 - Simulated IoT tamper detection
-- Role-based log verification using Decentralized Identity (DID)
+- Role-based log verification using Decentralised Identity (DID)
 
 ---
 
@@ -18,21 +18,21 @@
 
 ---
 
-## 🔧 Tech Stack
+##  Tech Stack
 
 -  Smart Contracts: Solidity, Hardhat/Remix, Ethereum Testnet
 -  Frontend: React.js, MetaMask, ethers.js
 -  IoT Simulation: Python
--  Identity: MetaMask wallets as Decentralized Identities
+-  Identity: MetaMask wallets as Decentralised Identities
 
 ---
 
 ##  Demo Instructions (for Judges)
 
-1. Connect MetaMask to Ethereum testnet (Mumbai/Sepolia)
+1. Connect MetaMask to the Ethereum testnet (Mumbai/Sepolia)
 2. Choose a role (Manufacturer, Transporter, Retailer)
-3. Add product logs using form
-4. View full supply chain history by scanning product QR
+3. Add product logs using the form
+4. View the full supply chain history by scanning the product QR
 
 ---
 
