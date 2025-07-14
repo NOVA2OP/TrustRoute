@@ -39,6 +39,7 @@ import contractConfig from "../contracts/config.json";
 
 const CONTRACT_ABI = contractABI;
 const CONTRACT_ADDRESS = contractConfig.contractAddress;
+const KNOWN_BATCH_IDS = ["BATCH001", "BATCH002", "BATCH003"]; 
 
 // Smart Contract ABI (simplified for demo)
 //const CONTRACT_ABI = [
@@ -665,57 +666,51 @@ export default function Dashboard() {
 
   // Fetch logs from blockchain
   const fetchLogs = async () => {
-    if (!wallet.isConnected) return
+  if (!wallet.isConnected || !wallet.provider) return;
 
-    setIsLoading(true)
-    try {
-      if (DEMO_MODE) {
-        // In demo mode, don't overwrite existing logs, just use current state
-        // The logs are already being managed by handleNewLog
-        setIsLoading(false)
-        return
-      }
+  setIsLoading(true);
 
-      if (!wallet.provider) return
+  try {
+    const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, wallet.provider);
+    let allLogs: ProductLog[] = [];
 
-      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, wallet.provider)
-
-      let contractLogs
-      if (selectedBatch) {
-        contractLogs = await contract.getLogs(selectedBatch)
-      } else {
-        contractLogs = await contract.getAllLogs()
-      }
+    for (const batchId of KNOWN_BATCH_IDS) {
+      const contractLogs = await contract.getLogs(batchId);
 
       const formattedLogs: ProductLog[] = contractLogs.map((log: any, index: number) => ({
-        id: `${log.batchId}-${log.timestamp}-${index}`,
-        batchId: log.batchId,
+        id: `${batchId}-${log.timestamp}-${index}`,
+        batchId,
         role: log.role,
         data: log.data,
         timestamp: new Date(Number(log.timestamp) * 1000),
-        txHash: `0x${Math.random().toString(16).substr(2, 64)}`, // In real app, get from event logs
-        sender: log.sender,
-      }))
+        txHash: `0x${Math.random().toString(16).substr(2, 64)}`, // You can replace this with real hash later
+        sender: log.addedBy,
+      }));
 
-      setLogs(formattedLogs)
-    } catch (error) {
-      console.error("Failed to fetch logs:", error)
-      toast({
-        title: "Failed to Fetch Logs",
-        description: DEMO_MODE ? "Demo mode error" : "Could not retrieve logs from blockchain",
-        variant: "destructive",
-      })
-    } finally {
-      setIsLoading(false)
+      allLogs = allLogs.concat(formattedLogs);
     }
+
+    setLogs(allLogs);
+  } catch (error) {
+    console.error("Failed to fetch logs:", error);
+    toast({
+      title: "Fetch Error",
+      description: "Could not retrieve logs from blockchain",
+      variant: "destructive",
+    });
+  } finally {
+    setIsLoading(false);
   }
+};
+
 
   // Fetch logs when wallet connects or selected batch changes
   useEffect(() => {
     if (wallet.isConnected) {
-      fetchLogs()
+      fetchLogs();
     }
-  }, [wallet.isConnected, selectedBatch])
+  }, [wallet.isConnected]);
+
 
   const handleBatchSelect = (batchId: string) => {
     setSelectedBatch(batchId)
