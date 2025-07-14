@@ -39,7 +39,7 @@ import contractConfig from "../contracts/config.json";
 
 const CONTRACT_ABI = contractABI;
 const CONTRACT_ADDRESS = contractConfig.contractAddress;
-const KNOWN_BATCH_IDS = ["BATCH001", "BATCH002", "BATCH003"]; 
+const KNOWN_BATCH_IDS = ["BATCH001", "BATCH002", "BATCH003", "BATCH01", "BATCH02", "BATCH1"]; 
 
 // Smart Contract ABI (simplified for demo)
 //const CONTRACT_ABI = [
