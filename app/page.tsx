@@ -674,7 +674,8 @@ export default function Dashboard() {
     const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, wallet.provider);
     let allLogs: ProductLog[] = [];
 
-    for (const batchId of KNOWN_BATCH_IDS) {
+    const batchesToFetch = selectedBatch ? [selectedBatch] : KNOWN_BATCH_IDS;
+    for (const batchId of batchesToFetch) {
       const contractLogs = await contract.getLogs(batchId);
 
       const formattedLogs: ProductLog[] = contractLogs.map((log: any, index: number) => ({
