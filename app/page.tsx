@@ -777,9 +777,9 @@ export default function Dashboard() {
                   <div>
                     <ProductTimeline
                       logs={
-                        wallet.isConnected
-                          ? logs.filter(log => log.sender.toLowerCase() === wallet.address.toLowerCase())
-                          : []
+                        selectedBatch
+                          ? logs.filter(log => log.batchId === selectedBatch)
+                          : logs.filter(log => log.sender.toLowerCase() === wallet.address.toLowerCase())
                       }
                       wallet={wallet}
                       selectedBatch={selectedBatch}
