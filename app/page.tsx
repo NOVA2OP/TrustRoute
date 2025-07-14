@@ -657,52 +657,61 @@ export default function Dashboard() {
 
   // Check for batch ID in URL on load
   useEffect(() => {
-    const batchFromUrl = searchParams.get("batch")
+    const batchFromUrl = searchParams.get("batch");
     if (batchFromUrl) {
-      setSelectedBatch(batchFromUrl)
-      setCurrentBatchId(batchFromUrl)
+      setSelectedBatch(batchFromUrl);
+      setCurrentBatchId(batchFromUrl);
+      fetchLogs(batchFromUrl);
     }
-  }, [searchParams])
+  }, [searchParams]);
+
 
   // Fetch logs from blockchain
-  const fetchLogs = async () => {
-  if (!wallet.isConnected || !wallet.provider) return;
+  const fetchLogs = async (forcedBatchId?: string) => {
+    const provider = wallet.provider;
+    if (!provider) return; // fail-safe
 
-  setIsLoading(true);
+    setIsLoading(true);
 
-  try {
-    const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, wallet.provider);
-    let allLogs: ProductLog[] = [];
+    try {
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
+      let allLogs: ProductLog[] = [];
 
-    const batchesToFetch = selectedBatch ? [selectedBatch] : KNOWN_BATCH_IDS;
-    for (const batchId of batchesToFetch) {
-      const contractLogs = await contract.getLogs(batchId);
+      const batchesToFetch = forcedBatchId
+        ? [forcedBatchId]
+        : selectedBatch
+        ? [selectedBatch]
+        : KNOWN_BATCH_IDS;
 
-      const formattedLogs: ProductLog[] = contractLogs.map((log: any, index: number) => ({
-        id: `${batchId}-${log.timestamp}-${index}`,
-        batchId,
-        role: log.role,
-        data: log.data,
-        timestamp: new Date(Number(log.timestamp) * 1000),
-        txHash: `0x${Math.random().toString(16).substr(2, 64)}`,
-        sender: log.addedBy,
-      }));
+      for (const batchId of batchesToFetch) {
+        const contractLogs = await contract.getLogs(batchId);
 
-      allLogs = allLogs.concat(formattedLogs);
+        const formattedLogs: ProductLog[] = contractLogs.map((log: any, index: number) => ({
+          id: `${batchId}-${log.timestamp}-${index}`,
+          batchId,
+          role: log.role,
+          data: log.data,
+          timestamp: new Date(Number(log.timestamp) * 1000),
+          txHash: `0x${Math.random().toString(16).substr(2, 64)}`,
+          sender: log.addedBy,
+        }));
+
+        allLogs = allLogs.concat(formattedLogs);
+      }
+
+      setLogs(allLogs);
+    } catch (error) {
+      console.error("Failed to fetch logs:", error);
+      toast({
+        title: "Fetch Error",
+        description: "Could not retrieve logs from blockchain",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
+  };
 
-    setLogs(allLogs);
-  } catch (error) {
-    console.error("Failed to fetch logs:", error);
-    toast({
-      title: "Fetch Error",
-      description: "Could not retrieve logs from blockchain",
-      variant: "destructive",
-    });
-  } finally {
-    setIsLoading(false);
-  }
-};
 
 
   // Fetch logs when wallet connects or selected batch changes
