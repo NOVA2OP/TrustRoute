@@ -684,7 +684,7 @@ export default function Dashboard() {
         role: log.role,
         data: log.data,
         timestamp: new Date(Number(log.timestamp) * 1000),
-        txHash: `0x${Math.random().toString(16).substr(2, 64)}`, // You can replace this with real hash later
+        txHash: `0x${Math.random().toString(16).substr(2, 64)}`,
         sender: log.addedBy,
       }));
 
@@ -707,10 +707,11 @@ export default function Dashboard() {
 
   // Fetch logs when wallet connects or selected batch changes
   useEffect(() => {
-    if (wallet.isConnected) {
-      fetchLogs();
+    if (wallet.isConnected && selectedBatch) {
+      fetchLogs()
     }
-  }, [wallet.isConnected]);
+  }, [wallet.isConnected, selectedBatch])
+
 
 
   const handleBatchSelect = (batchId: string) => {
