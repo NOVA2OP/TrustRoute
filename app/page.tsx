@@ -34,19 +34,24 @@ import { Toaster } from "@/components/ui/toaster"
 import QRCode from "qrcode"
 import { useSearchParams, useRouter } from "next/navigation"
 import { DEMO_WALLET_ADDRESSES, SAMPLE_LOGS, generateIoTLog } from "@/lib/demo-data"
+import contractABI from "../contracts/TrustRoute_ABI.json";
+import contractConfig from "../contracts/config.json";
+
+const CONTRACT_ABI = contractABI;
+const CONTRACT_ADDRESS = contractConfig.contractAddress;
 
 // Smart Contract ABI (simplified for demo)
-const CONTRACT_ABI = [
-  "function addLog(string memory batchId, string memory role, string memory data) public returns (uint256)",
-  "function getLogs(string memory batchId) public view returns (tuple(string batchId, string role, string data, uint256 timestamp, address sender)[])",
-  "function getAllLogs() public view returns (tuple(string batchId, string role, string data, uint256 timestamp, address sender)[])",
-]
+//const CONTRACT_ABI = [
+//  "function addLog(string memory batchId, string memory role, string memory data) public returns (uint256)",
+//  "function getLogs(string memory batchId) public view returns (tuple(string batchId, string role, string data, uint256 timestamp, address sender)[])",
+//  "function getAllLogs() public view returns (tuple(string batchId, string role, string data, uint256 timestamp, address sender)[])",
+//]
 
 // Replace with your deployed contract address from Teammate A
-const CONTRACT_ADDRESS = "0x1234567890123456789012345678901234567890" // TODO: Update when deployed
+//const CONTRACT_ADDRESS = "0x1234567890123456789012345678901234567890" // TODO: Update when deployed
 
 // Demo mode - set to false when blockchain is ready
-const DEMO_MODE = true
+const DEMO_MODE = false
 
 // Role verification - Update with hardcoded addresses from Teammate A
 const AUTHORIZED_ROLES = {
@@ -775,7 +780,16 @@ export default function Dashboard() {
                     <BatchSearch onBatchSelect={handleBatchSelect} />
                   </div>
                   <div>
-                    <ProductTimeline logs={logs} wallet={wallet} selectedBatch={selectedBatch} onRefresh={fetchLogs} />
+                    <ProductTimeline
+                      logs={
+                        wallet.isConnected
+                          ? logs.filter(log => log.sender.toLowerCase() === wallet.address.toLowerCase())
+                          : []
+                      }
+                      wallet={wallet}
+                      selectedBatch={selectedBatch}
+                      onRefresh={fetchLogs}
+                    />
                     {selectedBatch && (
                       <div className="mt-4">
                         <Button variant="outline" onClick={clearBatchFilter}>
