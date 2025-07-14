@@ -52,7 +52,12 @@ const CONTRACT_ADDRESS = contractConfig.contractAddress;
 
 // Demo mode - set to false when blockchain is ready
 const DEMO_MODE = false
-
+async function fetchUserRole(address: string, provider: ethers.BrowserProvider) {
+  if (!address || !provider) return null;
+  const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
+  return await contract.userRoles(address);
+}
+/*
 // Role verification - Update with hardcoded addresses from Teammate A
 const AUTHORIZED_ROLES = {
   "Manufacturer": DEMO_MODE ? [DEMO_WALLET_ADDRESSES.manufacturer1, DEMO_WALLET_ADDRESSES.manufacturer2] : ["0xManufacturerAddress1", "0xManufacturerAddress2"],
@@ -60,8 +65,9 @@ const AUTHORIZED_ROLES = {
   "Retailer": DEMO_MODE ? [DEMO_WALLET_ADDRESSES.retailer1, DEMO_WALLET_ADDRESSES.retailer2] : ["0xRetailerAddress1", "0xRetailerAddress2"],
   "Inspector": DEMO_MODE ? [DEMO_WALLET_ADDRESSES.inspector1, DEMO_WALLET_ADDRESSES.inspector2] : ["0xInspectorAddress1", "0xInspectorAddress2"],
 }
-
+*/
 // Helper function to check if wallet address is authorized for a role
+/*
 const isAuthorizedForRole = (address: string, role: string): boolean => {
   const authorizedAddresses = AUTHORIZED_ROLES[role as keyof typeof AUTHORIZED_ROLES]
   return authorizedAddresses?.includes(address) || false
@@ -76,6 +82,8 @@ const getUserRole = (address: string): string | null => {
   }
   return null
 }
+*/
+
 
 interface ProductLog {
   id: string
@@ -230,23 +238,22 @@ function ConnectWalletButton({
 
 function ProductLogForm({
   wallet,
+  userRole,
   onLogAdded,
   onBatchIdChange,
   onNewLog,
 }: {
   wallet: WalletState
+  userRole: string | null
   onLogAdded: () => void
   onBatchIdChange: (batchId: string) => void
   onNewLog?: (log: ProductLog) => void
 }) {
   const [batchId, setBatchId] = useState("")
-  const [role, setRole] = useState("")
   const [data, setData] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Get user's authorized role
-  const userRole = wallet.isConnected ? getUserRole(wallet.address) : null
-  const availableRoles = Object.keys(AUTHORIZED_ROLES)
 
   const handleBatchIdChange = (value: string) => {
     setBatchId(value)
@@ -265,7 +272,7 @@ function ProductLogForm({
       return
     }
 
-    if (!batchId || !role || !data) {
+    if (!batchId || !data) {
       toast({
         title: "Missing Information",
         description: "Please fill in all fields",
@@ -275,15 +282,6 @@ function ProductLogForm({
     }
 
     // Check if user is authorized for the selected role
-    if (!isAuthorizedForRole(wallet.address, role)) {
-      toast({
-        title: "Unauthorized Role",
-        description: `Your wallet is not authorized for the ${role} role`,
-        variant: "destructive",
-      })
-      return
-    }
-
     setIsSubmitting(true)
 
     try {
@@ -293,14 +291,14 @@ function ProductLogForm({
         
         // Create new log entry
         const newLog: ProductLog = {
-          id: `demo-${Date.now()}`,
-          batchId: batchId,
-          role: role,
-          data: data,
-          timestamp: new Date(),
-          txHash: `0x${Math.random().toString(16).substr(2, 64)}`,
-          sender: wallet.address
-        }
+        id: `demo-${Date.now()}`,
+        batchId: batchId,
+        role: userRole || "",
+        data: data,
+        timestamp: new Date(),
+        txHash: `0x${Math.random().toString(16).substr(2, 64)}`,
+        sender: wallet.address
+      }
 
         // Add to logs state immediately
         if (onNewLog) {
@@ -314,7 +312,6 @@ function ProductLogForm({
 
         // Clear form
         setBatchId("")
-        setRole("")
         setData("")
         // Don't call onLogAdded in demo mode as it resets the logs
         return
@@ -333,7 +330,15 @@ function ProductLogForm({
       const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, wallet.signer)
 
       // Send transaction
-      const tx = await contract.addLog(batchId, role, data)
+      if (!userRole) {
+        toast({
+          title: "Unauthorized",
+          description: "Your wallet is not authorized for any role",
+          variant: "destructive",
+        })
+        return
+      }
+      const tx = await contract.addLog(batchId, data)
 
       toast({
         title: "Transaction Sent",
@@ -350,7 +355,6 @@ function ProductLogForm({
 
       // Clear form
       setBatchId("")
-      setRole("")
       setData("")
       onLogAdded()
     } catch (error: any) {
@@ -392,26 +396,10 @@ function ProductLogForm({
           </div>
           <div className="space-y-2">
             <Label htmlFor="role">Role</Label>
-            <Select value={role} onValueChange={setRole}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select your role" />
-              </SelectTrigger>
-              <SelectContent>
-                {availableRoles.map((roleOption) => (
-                  <SelectItem 
-                    key={roleOption} 
-                    value={roleOption}
-                    disabled={wallet.isConnected && !isAuthorizedForRole(wallet.address, roleOption)}
-                  >
-                    {roleOption}
-                    {wallet.isConnected && !isAuthorizedForRole(wallet.address, roleOption) && " (Not Authorized)"}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {wallet.isConnected && role && !isAuthorizedForRole(wallet.address, role) && (
+            <Input id="role" value={userRole || ""} disabled />
+            {!userRole && (
               <p className="text-sm text-destructive">
-                Your wallet ({wallet.address.slice(0, 6)}...{wallet.address.slice(-4)}) is not authorized for this role
+                Your wallet is not authorized for any role.
               </p>
             )}
           </div>
@@ -419,17 +407,17 @@ function ProductLogForm({
             <Label htmlFor="data">Data</Label>
             <Textarea
               id="data"
-              placeholder={DEMO_MODE ? generateIoTLog(role) : "Enter relevant information about this step in the supply chain"}
+              placeholder={DEMO_MODE ? generateIoTLog(userRole || "") : "Enter relevant information about this step in the supply chain"}
               value={data}
               onChange={(e) => setData(e.target.value)}
               rows={3}
             />
-            {DEMO_MODE && role && (
+            {DEMO_MODE && userRole && (
               <Button 
                 type="button" 
                 variant="outline" 
                 size="sm"
-                onClick={() => setData(generateIoTLog(role))}
+                onClick={() => setData(generateIoTLog(userRole))}
               >
                 Generate IoT Sample Data
               </Button>
@@ -635,6 +623,7 @@ function ProductTimeline({
 
 export default function Dashboard() {
   const [activeView, setActiveView] = useState("dashboard")
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [section, setSection] = useState("dashboard")
   const [wallet, setWallet] = useState<WalletState>({
     isConnected: false,
@@ -653,6 +642,14 @@ export default function Dashboard() {
       setLogs([...SAMPLE_LOGS])
     }
   }, [])
+
+  useEffect(() => {
+    if (wallet.isConnected && wallet.provider) {
+      fetchUserRole(wallet.address, wallet.provider).then(setUserRole)
+    } else {
+      setUserRole(null)
+    }
+  }, [wallet.isConnected, wallet.address, wallet.provider])
 
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -772,6 +769,7 @@ export default function Dashboard() {
                   <div className="space-y-6">
                     <ProductLogForm 
                       wallet={wallet} 
+                      userRole={userRole} // <-- ADD THIS PROP
                       onLogAdded={fetchLogs} 
                       onBatchIdChange={setCurrentBatchId}
                       onNewLog={handleNewLog}
@@ -804,6 +802,7 @@ export default function Dashboard() {
               {activeView === "logs" && (
                 <ProductLogForm 
                   wallet={wallet} 
+                  userRole={userRole}
                   onLogAdded={fetchLogs} 
                   onBatchIdChange={setCurrentBatchId}
                   onNewLog={handleNewLog}
