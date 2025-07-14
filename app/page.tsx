@@ -89,7 +89,8 @@ interface WalletState {
   signer: ethers.Signer | null
 }
 
-function AppSidebar() {
+// Update AppSidebar to accept props:
+function AppSidebar({ onViewChange }: { onViewChange: (view: string) => void }) {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="p-4">
@@ -100,19 +101,19 @@ function AppSidebar() {
       </SidebarHeader>
       <SidebarContent className="p-4">
         <nav className="space-y-2">
-          <Button variant="ghost" className="w-full justify-start">
+          <Button variant="ghost" className="w-full justify-start" onClick={() => onViewChange("dashboard")}>
             <Package className="mr-2 h-4 w-4" />
             <span>Dashboard</span>
           </Button>
-          <Button variant="ghost" className="w-full justify-start">
+          <Button variant="ghost" className="w-full justify-start" onClick={() => onViewChange("logs")}>
             <FileText className="mr-2 h-4 w-4" />
             <span>Product Logs</span>
           </Button>
-          <Button variant="ghost" className="w-full justify-start">
+          <Button variant="ghost" className="w-full justify-start" onClick={() => onViewChange("qr")}>
             <QrCode className="mr-2 h-4 w-4" />
             <span>QR Codes</span>
           </Button>
-          <Button variant="ghost" className="w-full justify-start">
+          <Button variant="ghost" className="w-full justify-start" onClick={() => onViewChange("timeline")}>
             <Clock className="mr-2 h-4 w-4" />
             <span>Timeline</span>
           </Button>
@@ -121,6 +122,7 @@ function AppSidebar() {
     </Sidebar>
   )
 }
+
 
 function ConnectWalletButton({
   wallet,
@@ -627,6 +629,8 @@ function ProductTimeline({
 }
 
 export default function Dashboard() {
+  const [activeView, setActiveView] = useState("dashboard")
+  const [section, setSection] = useState("dashboard")
   const [wallet, setWallet] = useState<WalletState>({
     isConnected: false,
     address: "",
@@ -737,7 +741,7 @@ export default function Dashboard() {
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <SidebarProvider>
         <div className="flex min-h-screen w-full">
-          <AppSidebar />
+          <AppSidebar onViewChange={setActiveView} />
           <SidebarInset>
             <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
               <div className="flex h-16 items-center justify-between px-6">
@@ -758,28 +762,45 @@ export default function Dashboard() {
             </header>
 
             <main className="flex-1 p-6 space-y-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="space-y-6">
-                  <ProductLogForm 
-                    wallet={wallet} 
-                    onLogAdded={fetchLogs} 
-                    onBatchIdChange={setCurrentBatchId}
-                    onNewLog={handleNewLog}
-                  />
-                  <QRCodeGenerator batchId={currentBatchId} />
-                  <BatchSearch onBatchSelect={handleBatchSelect} />
+              {activeView === "dashboard" && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="space-y-6">
+                    <ProductLogForm 
+                      wallet={wallet} 
+                      onLogAdded={fetchLogs} 
+                      onBatchIdChange={setCurrentBatchId}
+                      onNewLog={handleNewLog}
+                    />
+                    <QRCodeGenerator batchId={currentBatchId} />
+                    <BatchSearch onBatchSelect={handleBatchSelect} />
+                  </div>
+                  <div>
+                    <ProductTimeline logs={logs} wallet={wallet} selectedBatch={selectedBatch} onRefresh={fetchLogs} />
+                    {selectedBatch && (
+                      <div className="mt-4">
+                        <Button variant="outline" onClick={clearBatchFilter}>
+                          Show All Batches
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div>
-                  <ProductTimeline logs={logs} wallet={wallet} selectedBatch={selectedBatch} onRefresh={fetchLogs} />
-                  {selectedBatch && (
-                    <div className="mt-4">
-                      <Button variant="outline" onClick={clearBatchFilter}>
-                        Show All Batches
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </div>
+              )}
+
+              {activeView === "logs" && (
+                <ProductLogForm 
+                  wallet={wallet} 
+                  onLogAdded={fetchLogs} 
+                  onBatchIdChange={setCurrentBatchId}
+                  onNewLog={handleNewLog}
+                />
+              )}
+
+              {activeView === "qr" && <QRCodeGenerator batchId={currentBatchId} />}
+
+              {activeView === "timeline" && (
+                <ProductTimeline logs={logs} wallet={wallet} selectedBatch={selectedBatch} onRefresh={fetchLogs} />
+              )}
             </main>
           </SidebarInset>
         </div>
