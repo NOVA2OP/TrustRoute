@@ -446,7 +446,7 @@ function QRCodeGenerator({ batchId }: { batchId: string }) {
   useEffect(() => {
     if (batchId) {
       // Create URL that includes the batch ID for scanning
-      const appUrl = `${window.location.origin}?batch=${encodeURIComponent(batchId)}`
+      const appUrl = `https://trust-route.vercel.app/?batch=${encodeURIComponent(batchId)}`
       QRCode.toDataURL(appUrl, { width: 200, margin: 2 })
         .then((url) => setQrCodeUrl(url))
         .catch((err) => console.error(err))
