@@ -1,5 +1,12 @@
 # TrustRoute
 
+## Live Site
+[The code is deployed here](https://trust-route.vercel.app/)
+
+##  Demo Video
+
+ [Link to demo video](https://youtu.be/fuNbjsp9HLo?si=t2kVYSJfaCx7jCrr) 
+
 **TrustRoute** is a blockchain + cybersecurity solution built for the Walmart Hackathon 2025 to build customer trust through:
 - Blockchain-based product authenticity tracking
 - Simulated IoT tamper detection
@@ -33,12 +40,6 @@
 2. Choose a role (Manufacturer, Transporter, Retailer)
 3. Add product logs using the form
 4. View the full supply chain history by scanning the product QR
-
----
-
-##  Demo Video
-
- [Link to demo video](https://youtu.be/fuNbjsp9HLo?si=t2kVYSJfaCx7jCrr) 
 
 ---
 
