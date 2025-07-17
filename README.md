@@ -36,10 +36,12 @@
 
 ##  Demo Instructions (for Judges)
 
-1. Connect MetaMask to the Ethereum testnet (Mumbai/Sepolia)
-2. Choose a role (Manufacturer, Transporter, Retailer)
-3. Add product logs using the form
-4. View the full supply chain history by scanning the product QR
+1. Connect MetaMask to the Ethereum testnet (Mumbai/Sepolia), to view existing logs, this step is necessary.
+2. To get assigned a role to actually add logs, you have to ask for permission by sending the wallet address, as only I (Advik) can assign roles (my wallet is admin).
+3. For the meanwhile, you can view existing logs created by Garvit (Manufacturer) and Shivansh (Transporter) for BATCH001 and BATCH01 and BATCH002.
+4. Choose a role (Manufacturer, Transporter, Retailer)
+5. Add product logs using the form
+6. View the full supply chain history by scanning the product QR
 
 ---
 
